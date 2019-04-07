@@ -103,11 +103,12 @@ def _process_image(img):
 
 
 def main():
-    datasetdir = ".\\proj1_daneA\\set1"
+    datasetdir = os.path.join(".", "proj1_daneA", "set1")
     for image in os.listdir(datasetdir):
         if image.lower().endswith('png'):
-            print(datasetdir + "\\" + image)
-            img = io.imread(datasetdir + "\\" + image)
+            path = os.path.join(datasetdir, image)
+            print(path)
+            img = io.imread(path)
             _process_image(img)
     # filedir = ".\\proj1_daneA\\set0\\1.png"
     # img = io.imread(filedir)
