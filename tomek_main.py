@@ -27,6 +27,7 @@ def get_sub_image(rect, src):
 
 
 def get_four_parts_indices(img_shape):
+    # It returns sets of ranges (each for one corner)
     rows, cols = img_shape
     rows_cond = rows % 2
     cols_cond = cols % 2
@@ -48,6 +49,7 @@ def get_four_parts_indices(img_shape):
 
 
 def find_base(img_shape, areas):
+    # It finds a base of the rectangle, chooses maximum sum from two adjacent rectangles
     rows, cols = img_shape
     areas_sum = []
     for i, _ in enumerate(areas):
@@ -67,6 +69,7 @@ def find_base(img_shape, areas):
 
 
 def find_best_rectangle(contours):
+    # It finds the best rectangle from contour If there is more than one contour, it chooses the biggest
     best_rect = None
     off_1, off_2 = -1, -1
     for contour in contours:
