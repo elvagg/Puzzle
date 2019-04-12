@@ -87,12 +87,12 @@ def process_image(img):
     # print(scale_y, scale_x, img.shape)
     # img = cv2.resize(img, (int(img.shape[0] / scale_y), int(img.shape[1] / scale_x)))
     ret, thresh = cv2.threshold(img, 127, 255, 0)
-    contours, hierarchy = cv2.findContours(thresh, 1, 2)
+    _, contours, hierarchy = cv2.findContours(thresh, 1, 2)
     if len(contours) > 1:
         rect = find_best_rectangle(contours)
     else:
         rect = cv2.minAreaRect(contours[0])
-    dst = get_sub_image(rect, img)
+    dst = get_sub_image(rect, thresh)
     plt.show()
     ranges = get_four_parts_indices(dst.shape[:2])
     areas = []
@@ -103,38 +103,57 @@ def process_image(img):
         arguments = np.argwhere(rectangle_part > 127)
         areas.append(arguments.shape[0])
     base = find_base(dst.shape[:2], areas)
+    # for point in rect:
+    #     print(point)
+    #     x, y = int(point[0]), int(point[1])
+    #     cv2.circle(img, (x, y), 2, (255, 0, 0), -1)
+    box = cv2.boxPoints(rect)
+    box = np.int0(box)
+    img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+    cv2.drawContours(img, [box], 0, (255, 0, 0), 1)
     dst = cv2.cvtColor(dst, cv2.COLOR_GRAY2RGB)
     cv2.line(dst, (base[0][1], base[0][0]), (base[1][1], base[1][0]), (255, 0, 0), 3)
-    return dst
+    return img, dst
+
+def plot(img, res, name):
+    plt.figure(1)
+    plt.subplot(121)
+    plt.imshow(img)
+
+    plt.subplot(122)
+    plt.imshow(res)
+    plt.title(name)
+    plt.show()
 
 
 def main():
-    datasetdir = os.path.join(".", "proj1_daneA", "set1")
-    # datasetdir = os.path.join(".", "proj1_daneB", "set7")
-    for image in os.listdir(datasetdir):
+    test_sets = {
+        "set0": os.path.join(".", "proj1_daneA", "set0"),
+        "set1": os.path.join(".", "proj1_daneA", "set1"),
+        "set2": os.path.join(".", "proj1_daneA", "set2"),
+        "set3": os.path.join(".", "proj1_daneA", "set3"),
+        "set4": os.path.join(".", "proj1_daneA", "set4"),
+        "set5": os.path.join(".", "proj1_daneA", "set5"),
+        "set6": os.path.join(".", "proj1_daneA", "set6"),
+        "set7": os.path.join(".", "proj1_daneB", "set7"),
+        "set8": os.path.join(".", "proj1_daneB", "set8"),
+    }
+    set_dir = test_sets["set2"]
+
+    for image in os.listdir(set_dir):
         if image.lower().endswith('png'):
-            path = os.path.join(datasetdir, image)
+            path = os.path.join(set_dir, image)
             img = io.imread(path)
-            dst = process_image(img)
+            img, res = process_image(img)
+            plot(img, res, path.split("\\")[-1])
 
-            plt.figure(1)
-            plt.subplot(121)
-            plt.imshow(img)
-
-            plt.subplot(122)
-            plt.imshow(dst)
-            plt.title(path.split("\\")[-1])
-            plt.show()
 
 def test():
-    path = os.path.join(".", "proj1_daneA", "set1", "0.png")
+    path = os.path.join(".", "proj1_daneA", "set2", "7.png")
     img = io.imread(path)
-    plt.imshow(img)
-    plt.show()
+    img, res = process_image(img)
+    plot(img, res, "test")
 
-    dst = process_image(img)
-    plt.imshow(dst)
-    plt.show()
 
 if __name__ == "__main__":
     main()
