@@ -82,6 +82,10 @@ def find_best_rectangle(contours):
 
 
 def process_image(img):
+    # scale_y = img.shape[0] / 100
+    # scale_x = img.shape[1] / 100
+    # print(scale_y, scale_x, img.shape)
+    # img = cv2.resize(img, (int(img.shape[0] / scale_y), int(img.shape[1] / scale_x)))
     ret, thresh = cv2.threshold(img, 127, 255, 0)
     contours, hierarchy = cv2.findContours(thresh, 1, 2)
     if len(contours) > 1:
@@ -105,28 +109,25 @@ def process_image(img):
 
 
 def main():
-    datasetdir = os.path.join(".", "proj1_daneB", "set7")
+    datasetdir = os.path.join(".", "proj1_daneA", "set1")
+    # datasetdir = os.path.join(".", "proj1_daneB", "set7")
     for image in os.listdir(datasetdir):
         if image.lower().endswith('png'):
             path = os.path.join(datasetdir, image)
             img = io.imread(path)
             dst = process_image(img)
 
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(img, path.split("\\")[-1].split(".")[0], (30, 30),
-                        font, 1, (0, 0, 255), 2, cv2.LINE_AA)
+            plt.figure(1)
+            plt.subplot(121)
             plt.imshow(img)
-            plt.show()
 
-            cv2.putText(dst, path.split("\\")[-1].split(".")[0], (30, 30),
-                        font, 1, (0, 0, 255), 2, cv2.LINE_AA)
+            plt.subplot(122)
             plt.imshow(dst)
+            plt.title(path.split("\\")[-1])
             plt.show()
-
-            sleep(1)
 
 def test():
-    path = os.path.join(".", "proj1_daneA", "set6", "0.png")
+    path = os.path.join(".", "proj1_daneA", "set1", "0.png")
     img = io.imread(path)
     plt.imshow(img)
     plt.show()
