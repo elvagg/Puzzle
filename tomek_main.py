@@ -177,8 +177,8 @@ def process_image(img):
     # curve_points = [(x, y) for (x, y), value in np.ndenumerate(img)
     #                 if value == 255 and x != 0 and x != img.shape[1] and y != img.shape[0]]
 
-    # contours = cv2.findContours(dst, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # print(contours)
+    contours = cv2.findContours(dst, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[1:][0][0]
+    print(contours)
     # contour_based_areas(contours)
 
     # for point in rect:
