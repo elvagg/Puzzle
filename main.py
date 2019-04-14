@@ -128,7 +128,7 @@ def _process_image(img):
 
 
 def main():
-    datasetdir = os.path.join(".", "proj1_daneA", "set1")
+    datasetdir = os.path.join(".", "proj1_daneB", "set7")
     for image in os.listdir(datasetdir):
         if image.lower().endswith('png'):
             path = os.path.join(datasetdir, image)

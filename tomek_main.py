@@ -13,17 +13,67 @@ import cv2
 
 
 def get_sub_image(rect, src):
-    # From stackoverflow
     # Get center, size, and angle from rect
     center, size, theta = rect
     # Convert to int
     center, size = tuple(map(int, center)), tuple(map(int, size))
     # Get rotation matrix for rectangle
-    M = cv2.getRotationMatrix2D( center, theta, 1)
-    # Perform rotation on src image
-    dst = cv2.warpAffine(src, M, src.shape[:2])
-    out = cv2.getRectSubPix(dst, size, center)
+
+    # grab the dimensions of the image and then determine the
+    # center
+    (h, w) = src.shape[:2]
+    (cX, cY) = center
+    # grab the rotation matrix (applying the negative of the
+    # angle to rotate clockwise), then grab the sine and cosine
+    # (i.e., the rotation components of the matrix)
+    M = cv2.getRotationMatrix2D(center, theta, 1.0)
+    cos = np.abs(M[0, 0])
+    sin = np.abs(M[0, 1])
+
+    # compute the new bounding dimensions of the image
+    nW = int((h * sin) + (w * cos))
+    nH = int((h * cos) + (w * sin))
+
+    # adjust the rotation matrix to take into account translation
+    M[0, 2] += (nW / 2) - cX
+    M[1, 2] += (nH / 2) - cY
+
+    # perform the actual rotation and return the image
+    dst = cv2.warpAffine(src, M, (nW, nH))
+    out = cv2.getRectSubPix(dst, size, (nW/2, nH/2))
     return out
+
+
+def get_final_rotation(image, base):
+    angle = 0
+    (h, w) = image.shape[:2]
+    (cX, cY) = (w//2, h//2)
+
+    if base[0][0] == 0 and base[1][1] == 0:
+        angle = 90
+    elif base[0][0] == 0 and base[1][0] == 0:
+        angle = 180
+    elif base[0][1] != 0:
+        angle = -90
+
+    # grab the rotation matrix (applying the negative of the
+    # angle to rotate clockwise), then grab the sine and cosine
+    # (i.e., the rotation components of the matrix)
+    M = cv2.getRotationMatrix2D((cX, cY), angle, 1.0)
+    cos = np.abs(M[0, 0])
+    sin = np.abs(M[0, 1])
+
+    # compute the new bounding dimensions of the image
+    nW = int((h * sin) + (w * cos))
+    nH = int((h * cos) + (w * sin))
+
+    # adjust the rotation matrix to take into account translation
+    M[0, 2] += (nW / 2) - cX
+    M[1, 2] += (nH / 2) - cY
+
+    # perform the actual rotation and return the image
+    dst = cv2.warpAffine(image, M, (nW, nH))
+    return dst
 
 
 def get_four_parts_indices(img_shape):
@@ -81,6 +131,22 @@ def find_best_rectangle(contours):
     return best_rect
 
 
+def calculate_areas(img, precision):
+    width = img.shape[1]
+    one_area_width = int(width / precision)
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    areas = np.zeros(precision)
+    for i in range(0, precision):
+        area_indices = img[:, one_area_width*i:one_area_width*(i+1)]
+        area = 0
+        # Sumowanie liczby pikseli - dość nieefektywne, będę próbowała czegoś innego z konturem
+        for value in np.nditer(area_indices):
+            if value != 0:
+                area += 1
+        areas[i] = area
+    return areas
+
+
 def process_image(img):
     # scale_y = img.shape[0] / 100
     # scale_x = img.shape[1] / 100
@@ -93,6 +159,7 @@ def process_image(img):
     else:
         rect = cv2.minAreaRect(contours[0])
     dst = get_sub_image(rect, thresh)
+
     plt.show()
     ranges = get_four_parts_indices(dst.shape[:2])
     areas = []
@@ -103,6 +170,17 @@ def process_image(img):
         arguments = np.argwhere(rectangle_part > 127)
         areas.append(arguments.shape[0])
     base = find_base(dst.shape[:2], areas)
+    print(base)
+    dst = get_final_rotation(dst, base)
+    base = ((dst.shape[0], 0), (dst.shape[0], dst.shape[1]))
+    # dst = cv2.Canny(dst, 100, 200)
+    # curve_points = [(x, y) for (x, y), value in np.ndenumerate(img)
+    #                 if value == 255 and x != 0 and x != img.shape[1] and y != img.shape[0]]
+
+    # contours = cv2.findContours(dst, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # print(contours)
+    # contour_based_areas(contours)
+
     # for point in rect:
     #     print(point)
     #     x, y = int(point[0]), int(point[1])
@@ -110,10 +188,12 @@ def process_image(img):
     box = cv2.boxPoints(rect)
     box = np.int0(box)
     img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+    areas = calculate_areas(dst, 10)
     cv2.drawContours(img, [box], 0, (255, 0, 0), 1)
     dst = cv2.cvtColor(dst, cv2.COLOR_GRAY2RGB)
     cv2.line(dst, (base[0][1], base[0][0]), (base[1][1], base[1][0]), (255, 0, 0), 3)
     return img, dst
+
 
 def plot(img, res, name):
     plt.figure(1)
