@@ -11,6 +11,9 @@ import skimage
 import os
 import cv2
 
+FINAL_RECTANGLE_WIDTH = 150
+FINAL_RECTANGLE_HEIGHT = 100
+
 
 def get_sub_image(rect, src):
     # Get center, size, and angle from rect
@@ -147,6 +150,10 @@ def calculate_areas(img, precision):
     return areas
 
 
+def scale_rectangle(rect, rect_width, rect_height):
+    return cv2.resize(rect, (rect_width, rect_height), interpolation=cv2.INTER_CUBIC)
+
+
 def process_image(img):
     # scale_y = img.shape[0] / 100
     # scale_x = img.shape[1] / 100
@@ -172,6 +179,7 @@ def process_image(img):
     base = find_base(dst.shape[:2], areas)
     print(base)
     dst = get_final_rotation(dst, base)
+    dst = scale_rectangle(dst, FINAL_RECTANGLE_WIDTH, FINAL_RECTANGLE_HEIGHT)
     base = ((dst.shape[0], 0), (dst.shape[0], dst.shape[1]))
     # dst = cv2.Canny(dst, 100, 200)
     # curve_points = [(x, y) for (x, y), value in np.ndenumerate(img)
@@ -218,7 +226,7 @@ def main():
         "set7": os.path.join(".", "proj1_daneB", "set7"),
         "set8": os.path.join(".", "proj1_daneB", "set8"),
     }
-    set_dir = test_sets["set2"]
+    set_dir = test_sets["set8"]
 
     for image in os.listdir(set_dir):
         if image.lower().endswith('png'):
