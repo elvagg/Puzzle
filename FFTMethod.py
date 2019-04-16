@@ -64,6 +64,7 @@ class FFTMethod:
                 else:
                     values.append(np.inf)
             rank = ""
+            print(values)
             for x in np.argsort(values):
                 rank += str(x) + " "
             print(rank)
