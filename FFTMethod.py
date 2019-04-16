@@ -11,9 +11,12 @@ class FFTMethod:
     def __init__(self, coefficients_count):
         self.coefficients_count = coefficients_count
 
-    def find_coefficients(self, rectangle):
+    def find_coefficients(self, rectangle, plot=False):
         curve = np.argmax(rectangle != 0, axis=0)
         flipped_curve = rectangle.shape[0] - np.flip(curve, axis=0)
+
+        if plot:
+            self.plot(curve, flipped_curve)
 
         curve = curve / np.max(curve)
         curve = curve - np.average(curve)
@@ -51,3 +54,16 @@ class FFTMethod:
                 print("{} {} - {}".format(i, j, np.abs(np.average(self.coefficients[i][0] -
                                                                   self.coefficients[j][1]))))
             print("-" * 40)
+
+    def generate_rankings(self):
+        for i in range(len(self.coefficients)):
+            values = []
+            for j in range(len(self.coefficients)):
+                if i != j:
+                    values.append(np.abs(np.average(self.coefficients[i][0] - self.coefficients[j][1])))
+                else:
+                    values.append(np.inf)
+            rank = ""
+            for x in np.argsort(values):
+                rank += str(x) + " "
+            print(rank)

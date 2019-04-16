@@ -17,12 +17,14 @@ def process(set_dir, plot=False, cc=5):
                 ip.plot()
 
             fft_method = FFTMethod(cc)
-            fft_method.find_coefficients(ip.result)
-    if plot and fft_method:
-        fft_method.plot_all_coefficients()
+            fft_method.find_coefficients(ip.result, plot=plot)
+    if fft_method:
+        fft_method.generate_rankings()
+        if plot:
+            fft_method.plot_all_coefficients()
 
 
-def main(set_name):
+def main(set_name, cc, plot):
     test_sets = {
         "set0": os.path.join(".", "proj1_daneA", "set0"),
         "set1": os.path.join(".", "proj1_daneA", "set1"),
@@ -34,19 +36,19 @@ def main(set_name):
         "set7": os.path.join(".", "proj1_daneB", "set7"),
         "set8": os.path.join(".", "proj1_daneB", "set8"),
     }
-    process(test_sets[set_name], plot=False)
+    process(test_sets[set_name], cc=cc, plot=plot)
 
 
 def test():
-    path = os.path.join(".", "proj1_daneA", "set2", "7.png")
+    path = os.path.join(".", "proj1_daneB", "set7", "19.png")
     ip = ImageProcessor()
     ip.read_img(path)
     ip.process_image()
     ip.plot()
-    fft_method = FFTMethod()
-    fft_method.find_coefficients(ip.result)
+    fft_method = FFTMethod(15)
+    fft_method.find_coefficients(ip.result, plot=True)
 
 
 if __name__ == "__main__":
-    main("set0")
+    main("set1", 15, False)
     # test()
