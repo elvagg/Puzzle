@@ -4,6 +4,24 @@ from FFTMethod import FFTMethod
 import os
 
 
+def process(set_dir, plot=False, cc=5):
+    FFTMethod.clear_coefficients()
+    fft_method = None
+    for image in os.listdir(set_dir):
+        if image.lower().endswith('png'):
+            path = os.path.join(set_dir, image)
+            ip = ImageProcessor()
+            ip.read_img(path)
+            ip.process_image()
+            if plot:
+                ip.plot()
+
+            fft_method = FFTMethod(cc)
+            fft_method.find_coefficients(ip.result)
+    if plot and fft_method:
+        fft_method.plot_all_coefficients()
+
+
 def main(set_name):
     test_sets = {
         "set0": os.path.join(".", "proj1_daneA", "set0"),
@@ -16,15 +34,7 @@ def main(set_name):
         "set7": os.path.join(".", "proj1_daneB", "set7"),
         "set8": os.path.join(".", "proj1_daneB", "set8"),
     }
-    set_dir = test_sets[set_name]
-
-    for image in os.listdir(set_dir):
-        if image.lower().endswith('png'):
-            path = os.path.join(set_dir, image)
-            ip = ImageProcessor()
-            ip.read_img(path)
-            ip.process_image()
-            ip.plot()
+    process(test_sets[set_name], plot=False)
 
 
 def test():
@@ -33,6 +43,8 @@ def test():
     ip.read_img(path)
     ip.process_image()
     ip.plot()
+    fft_method = FFTMethod()
+    fft_method.find_coefficients(ip.result)
 
 
 if __name__ == "__main__":

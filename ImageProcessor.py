@@ -11,7 +11,9 @@ import cv2
 class ImageProcessor:
     def __init__(self):
         self.img = None
+        # loaded image
         self.result = None
+        # cut and rotated rectangle
         self.name = ""
 
     def get_sub_image(self, rect, src):
@@ -107,7 +109,7 @@ class ImageProcessor:
         return M, nW, nH
 
     def process_image(self):
-        ret, thresh = cv2.threshold(self.img, 127, 255, 0)
+        ret, thresh = cv2.threshold(self.img, 127, 255, cv2.THRESH_BINARY)
         _, contours, hierarchy = cv2.findContours(thresh, 1, 2)
         if len(contours) > 1:
             rect = self.find_best_rectangle(contours)
@@ -115,7 +117,6 @@ class ImageProcessor:
             rect = cv2.minAreaRect(contours[0])
         self.result = self.get_sub_image(rect, thresh)
 
-        plt.show()
         ranges = self.get_four_parts_indices(self.result.shape[:2])
         areas = []
 
