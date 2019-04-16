@@ -143,5 +143,7 @@ class ImageProcessor:
         plt.title(self.name)
         plt.show()
 
-    def scale_image(self):
+    @staticmethod
+    def scale_image(img, rect_width, rect_height):
+        return cv2.resize(img, (rect_width, rect_height), interpolation=cv2.INTER_CUBIC)
 
