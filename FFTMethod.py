@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2
-
+import sys
 
 class FFTMethod:
     coefficients = []
@@ -66,7 +65,7 @@ class FFTMethod:
                                                                   self.coefficients[j][1]))))
             print("-" * 40)
 
-    def generate_rankings(self):
+    def generate_rankings(self, std_out=False):
         for i in range(len(self.coefficients)):
             values = []
             for j in range(len(self.coefficients)):
@@ -77,4 +76,7 @@ class FFTMethod:
             rank = ""
             for x in np.argsort(values):
                 rank += str(x) + " "
-            print(rank)
+            if std_out:
+                sys.stdout.write(rank)
+            else:
+                print(rank)

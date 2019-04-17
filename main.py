@@ -36,7 +36,7 @@ def from_bash(dir, N):
         fft_method = FFTMethod(cc)
         fft_method.find_coefficients(ip.result, plot=False)
     if fft_method:
-        fft_method.generate_rankings()
+        fft_method.generate_rankings(std_out=True)
 
 
 def main(set_name, cc, plot):
