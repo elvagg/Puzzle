@@ -13,7 +13,7 @@ class FFTMethod:
         self.coefficients_count = coefficients_count
         self.extended_length = 500
 
-    def find_coefficients(self, rectangle, ind, plot=False):
+    def find_coefficients(self, rectangle, plot=False):
         curve = np.argmax(rectangle != 0, axis=0)
         curve = np.interp(np.linspace(0, self.extended_length - 1, self.extended_length),
                           np.linspace(0, self.extended_length - 1, curve.shape[0]), curve)
@@ -31,8 +31,8 @@ class FFTMethod:
         #     np.fft.fft(flipped_curve, n=self.coefficients_count + 1)[1:int(self.coefficients_count / 2) + 1],
         # ]
         coefficients = [
-            np.fft.fft(curve)[1:self.coefficients_count],
-            np.fft.fft(flipped_curve)[1:self.coefficients_count],
+            np.fft.fft(curve)[1:1 + self.coefficients_count],
+            np.fft.fft(flipped_curve)[1:1 + self.coefficients_count],
         ]
         self.coefficients.append(coefficients)
 
@@ -72,9 +72,9 @@ class FFTMethod:
                 if i != j:
                     values.append(np.abs(np.average(self.coefficients[i][0] - self.coefficients[j][1])))
                 else:
-                    continue
+                    values.append(np.inf)
             rank = ""
             for x in np.argsort(values):
-                rank += str(x) + " "
-            rank += "\n"
+                if i != x:
+                    rank += str(x) + " "
             print(rank.rstrip())

@@ -50,7 +50,7 @@ def checkDir(commanddir, path, N):
             result[idx] += 1
         result[-1] += 1.0 / (1.0 + idx)
 
-    return result, stop - start;
+    return result, stop - start
 
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ def process(set_dir, image_count, plot=False, cc=5, N=None):
             ip.plot()
 
         fft_method = FFTMethod(cc)
-        fft_method.find_coefficients(ip.result, path.split("\\")[-1][:-4], plot=plot)
+        fft_method.find_coefficients(ip.result,plot=plot)
     if fft_method:
         fft_method.generate_rankings()
         if plot:
@@ -51,7 +51,8 @@ def main(set_name, cc, plot):
         "set7": (os.path.join(".", "data", "set7"), 20),
         "set8": (os.path.join(".", "data", "set8"), 100),
     }
-    process(test_sets[set_name][0], test_sets[set_name][1], cc=cc, plot=plot)
+    # process(test_sets[set_name][0], test_sets[set_name][1], cc=cc, plot=plot)
+    from_bash(test_sets[set_name][0], test_sets[set_name][1])
 
 
 def test(data_set, numbers, cc):
@@ -64,15 +65,15 @@ def test(data_set, numbers, cc):
         ip.process_image()
         ip.plot()
         fft_method = FFTMethod(cc)
-        fft_method.find_coefficients(ip.result, number, plot=True)
+        fft_method.find_coefficients(ip.result, plot=True)
     if fft_method:
         fft_method.generate_rankings()
         fft_method.plot_all_coefficients()
 
 
 if __name__ == "__main__":
-    # main("set1", 8, True)
+    main("set0", 20, False)
     # test("set1",[2, 5, 15], 20)
-    if len(sys.argv) != 2:
-        exit(1)
-    from_bash(sys.argv[0], sys.argv[1])
+    # if len(sys.argv) != 2:
+    #     exit(1)
+    # from_bash(sys.argv[0], sys.argv[1])
