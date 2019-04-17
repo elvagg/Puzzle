@@ -85,14 +85,8 @@ class ImageProcessor:
     @staticmethod
     def find_best_rectangle(contours):
         # It finds the best rectangle from contour If there is more than one contour, it chooses the biggest
-        best_rect = None
-        off_1, off_2 = -1, -1
-        for contour in contours:
-            rect = cv2.minAreaRect(contour)
-            if rect[1][0] > off_1 and rect[1][1] > off_2:
-                best_rect = rect
-                off_1 = rect[1][0]
-                off_2 = rect[1][1]
+        cnt = sorted(contours, key=cv2.contourArea, reverse=True)[0]
+        best_rect = cv2.minAreaRect(cnt)
         return best_rect
 
     @staticmethod
@@ -108,13 +102,42 @@ class ImageProcessor:
         M[1, 2] += (nH / 2) - cY
         return M, nW, nH
 
+    def find_sampled_edge(img, final_image_size):
+        # sampling
+        edge = []
+        sample_parameter = 5
+        img = img[:, ::sample_parameter]
+        for x in range(int(final_image_size / sample_parameter)):
+            curve_height = 0
+            for y in range(final_image_size):
+                if img[y, x] > 0:
+                    curve_height = y
+                    break
+            edge.append(curve_height)
+        return edge
+
+    def find_sampled_edge(self, img, final_image_size):
+        # sampling
+        edge = []
+        sample_parameter = 5
+        img = img[:, ::sample_parameter]
+        for x in range(int(final_image_size / sample_parameter)):
+            curve_height = 0
+            for y in range(final_image_size):
+                if img[y, x] > 0:
+                    curve_height = y
+                    break
+            edge.append(curve_height)
+        return edge
+
     def process_image(self):
-        ret, thresh = cv2.threshold(self.img, 127, 255, cv2.THRESH_BINARY)
-        _, contours, hierarchy = cv2.findContours(thresh, 1, 2)
+        ret, thresh = cv2.threshold(self.img, 230, 255, cv2.THRESH_BINARY)
+        _, contours, hierarchy = cv2.findContours(thresh, 1, cv2.CHAIN_APPROX_NONE)
         if len(contours) > 1:
             rect = self.find_best_rectangle(contours)
         else:
             rect = cv2.minAreaRect(contours[0])
+
         self.result = self.get_sub_image(rect, thresh)
 
         ranges = self.get_four_parts_indices(self.result.shape[:2])
@@ -129,6 +152,13 @@ class ImageProcessor:
 
         base = self.find_base(self.result.shape[:2], areas)
         self.result = self.get_final_rotation(self.result, base)
+
+        final_image_size = 500
+        img = cv2.resize(self.result, (final_image_size, final_image_size), 0, 0, interpolation=cv2.INTER_CUBIC)
+
+        edge = self.find_sampled_edge(img, final_image_size)
+        return edge
+
 
     def read_img(self, path):
         self.img = io.imread(path)

@@ -44,6 +44,7 @@ def process(set_dir, image_count, plot=False, write_spec=False, cc=1):
 
     if fft_method:
         ranks = fft_method.generate_rankings(print_out=plot)
+        print(ranks)
         results = check_ranks(ranks, set_dir, image_count)
         if write_spec:
             print(results)
