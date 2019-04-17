@@ -159,7 +159,6 @@ class ImageProcessor:
         edge = self.find_sampled_edge(img, final_image_size)
         return edge
 
-
     def read_img(self, path):
         self.img = io.imread(path)
         self.name = path.split("\\")[-1]
