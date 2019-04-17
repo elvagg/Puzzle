@@ -1,31 +1,41 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2
 
 
 class FFTMethod:
     coefficients = []
+
     # two list of fft coefficients for each rectangle
     # first - normal curve
     # second - flipped curve
 
     def __init__(self, coefficients_count):
         self.coefficients_count = coefficients_count
+        self.extended_length = 500
 
-    def find_coefficients(self, rectangle, plot=False):
+    def find_coefficients(self, rectangle, ind, plot=False):
         curve = np.argmax(rectangle != 0, axis=0)
+        curve = np.interp(np.linspace(0, self.extended_length - 1, self.extended_length),
+                          np.linspace(0, self.extended_length - 1, curve.shape[0]), curve)
         flipped_curve = rectangle.shape[0] - np.flip(curve, axis=0)
+        curve = curve - np.min(curve)
+        curve = curve / np.max(curve)
+
+        flipped_curve = flipped_curve - np.min(flipped_curve)
+        flipped_curve = flipped_curve / np.max(flipped_curve)
 
         if plot:
             self.plot(curve, flipped_curve)
-
-        curve = curve / np.max(curve)
-        curve = curve - np.average(curve)
-
-        flipped_curve = flipped_curve / np.max(flipped_curve)
-        flipped_curve = flipped_curve - np.average(flipped_curve)
-
-        self.coefficients.append([np.fft.fft(curve)[:self.coefficients_count],
-                                  np.fft.fft(flipped_curve)[:self.coefficients_count]])
+        # coefficients = [
+        #     np.fft.fft(curve, n=self.coefficients_count + 1)[1:int(self.coefficients_count / 2) + 1],
+        #     np.fft.fft(flipped_curve, n=self.coefficients_count + 1)[1:int(self.coefficients_count / 2) + 1],
+        # ]
+        coefficients = [
+            np.fft.fft(curve)[1:self.coefficients_count],
+            np.fft.fft(flipped_curve)[1:self.coefficients_count],
+        ]
+        self.coefficients.append(coefficients)
 
     @staticmethod
     def plot(first, second, first_name=None, second_name=None):
@@ -45,12 +55,13 @@ class FFTMethod:
     def clear_coefficients(cls):
         cls.coefficients = []
 
-    def plot_all_coefficients(self):
+    def plot_all_coefficients(self, only_print=False):
         for i in range(len(self.coefficients)):
             for j in range(len(self.coefficients)):
-                self.plot(np.abs(self.coefficients[i][0]),
-                          np.abs(self.coefficients[j][1]),
-                          first_name=str(i), second_name=str(j))
+                if not only_print:
+                    self.plot(np.abs(self.coefficients[i][0]),
+                              np.abs(self.coefficients[j][1]),
+                              first_name=str(i), second_name=str(j))
                 print("{} {} - {}".format(i, j, np.abs(np.average(self.coefficients[i][0] -
                                                                   self.coefficients[j][1]))))
             print("-" * 40)
@@ -64,7 +75,6 @@ class FFTMethod:
                 else:
                     values.append(np.inf)
             rank = ""
-            print(values)
             for x in np.argsort(values):
                 rank += str(x) + " "
             print(rank)
