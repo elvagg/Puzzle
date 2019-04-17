@@ -77,7 +77,4 @@ class FFTMethod:
             for x in np.argsort(values):
                 rank += str(x) + " "
             rank += "\n"
-            if std_out:
-                sys.stdout.write(rank)
-            else:
-                print(rank)
+            print(rank.rstrip())
