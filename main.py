@@ -25,7 +25,7 @@ def process(set_dir, image_count, plot=False, cc=5, N=None):
 
 
 def from_bash(dir, N):
-    cc = 20
+    cc = 17
     FFTMethod.clear_coefficients()
     fft_method = None
     for i in range(N):
@@ -72,8 +72,8 @@ def test(data_set, numbers, cc):
 
 
 if __name__ == "__main__":
-    main("set1", 20, False)
+    # main("set1", 20, False)
     # test("set1",[2, 5, 15], 20)
-    # if len(sys.argv) != 2:
-    #     exit(1)
-    # from_bash(sys.argv[0], sys.argv[1])
+    if len(sys.argv) != 3:
+        exit(1)
+    from_bash(sys.argv[1], int(sys.argv[2]))
