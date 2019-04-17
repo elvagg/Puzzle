@@ -153,6 +153,7 @@ class ImageProcessor:
         base = self.find_base(self.result.shape[:2], areas)
         self.result = self.get_final_rotation(self.result, base)
 
+        # ZAKOMENTOWAĆ CZĘŚC DALSZĄ JEŚLI UŻUWAMY FFT ! DO ZROBIENIA
         final_image_size = 500
         img = cv2.resize(self.result, (final_image_size, final_image_size), 0, 0, interpolation=cv2.INTER_CUBIC)
 
