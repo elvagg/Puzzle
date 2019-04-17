@@ -72,7 +72,7 @@ class FFTMethod:
                 if i != j:
                     values.append(np.abs(np.average(self.coefficients[i][0] - self.coefficients[j][1])))
                 else:
-                    values.append(np.inf)
+                    continue
             rank = ""
             for x in np.argsort(values):
                 rank += str(x) + " "
