@@ -44,7 +44,7 @@ def process(set_dir, image_count, plot=False, write_spec=False, cc=1):
 
     if fft_method:
         ranks = fft_method.generate_rankings(print_out=plot)
-        print(ranks)
+        # print(ranks)
         results = check_ranks(ranks, set_dir, image_count)
         if write_spec:
             print(results)
@@ -54,7 +54,7 @@ def process(set_dir, image_count, plot=False, write_spec=False, cc=1):
 
 
 def from_bash(dir, N):
-    cc = 1
+    cc = 31
     FFTMethod.clear_coefficients()
     fft_method = None
     for i in range(N):
@@ -101,15 +101,17 @@ def test(data_set, numbers, cc):
 
 
 if __name__ == "__main__":
+    param = 31
+    # the best value for sets with perspective
     all_sets_results = 0
-    for i in range(9):
+    for i in range(0, 9):
         s = "set{}".format(i)
-        res = main(s, 1, False, write_spec=True)
+        res = main(s, param, False, write_spec=False)
         print(s, res)
         all_sets_results += res
-    print("All sets res {} is {}%".format(all_sets_results, (all_sets_results / 606) * 100))
-    # print("max", max_result, "params", params)
+    print("Result {}, {.2f}%".format(all_sets_results, all_sets_results / 6.06))
     # test("set1",[2, 5, 15], 20)
+
     # if len(sys.argv) != 3:
     #     exit(1)
     # from_bash(sys.argv[1], int(sys.argv[2]))
