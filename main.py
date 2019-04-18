@@ -36,7 +36,7 @@ def process(set_dir, image_count, plot=False, write_spec=False, cc=1):
         path = os.path.join(set_dir, "{}.png".format(i))
         ip = ImageProcessor()
         ip.read_img(path)
-        ip.process_image()
+        ip.process_image(fix_perspective=False)
         if plot:
             ip.plot()
         fft_method = FFTMethod(cc)
@@ -94,7 +94,7 @@ def test(data_set, numbers, cc):
         ip.process_image()
         ip.plot()
         fft_method = FFTMethod(cc)
-        fft_method.find_coefficients(ip.result, plot=True)
+        fft_method.find_coefficients(ip.result, plot=False)
     if fft_method:
         fft_method.generate_rankings()
         fft_method.plot_all_coefficients()
@@ -109,7 +109,7 @@ if __name__ == "__main__":
         res = main(s, param, False, write_spec=False)
         print(s, res)
         all_sets_results += res
-    print("Result {}, {.2f}%".format(all_sets_results, all_sets_results / 6.06))
+    print("Result {}, {:.2f}%".format(all_sets_results, all_sets_results / 6.06))
     # test("set1",[2, 5, 15], 20)
 
     # if len(sys.argv) != 3:
