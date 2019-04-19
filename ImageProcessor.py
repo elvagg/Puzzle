@@ -102,6 +102,37 @@ class ImageProcessor:
         M[1, 2] += (nH / 2) - cY
         return M, nW, nH
 
+    @staticmethod
+    def four_point_transform(image, pts):
+        # it performs a four points transformation of perspective
+        rect = np.array(pts, np.float32)
+        (tl, tr, br, bl) = rect
+
+        widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
+        widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
+        maxWidth = max(int(widthA), int(widthB))
+
+        heightA = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
+        heightB = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
+        maxHeight = max(int(heightA), int(heightB))
+
+        dst = np.array([
+            [0, 0],
+            [maxWidth - 1, 0],
+            [maxWidth - 1, maxHeight - 1],
+            [0, maxHeight - 1]], dtype="float32")
+        M = cv2.getPerspectiveTransform(rect, dst)
+        warped = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
+
+        # return the warped image
+        return warped
+
+    def fix_perspective(self, contours):
+        warped = self.four_point_transform(self.result, contours)
+        plt.plot(warped)
+        return warped
+
+    @staticmethod
     def find_sampled_edge(img, final_image_size):
         # sampling
         edge = []
@@ -116,62 +147,9 @@ class ImageProcessor:
             edge.append(curve_height)
         return edge
 
-    def four_point_transform(self, image, pts):
-        # print(pts)
-        rect = np.array(pts, np.float32)
-        (tl, tr, br, bl) = rect
-
-        # compute the width of the new image, which will be the
-        # maximum distance between bottom-right and bottom-left
-        # x-coordiates or the top-right and top-left x-coordinates
-        widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
-        widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
-        maxWidth = max(int(widthA), int(widthB))
-
-        # compute the height of the new image, which will be the
-        # maximum distance between the top-right and bottom-right
-        # y-coordinates or the top-left and bottom-left y-coordinates
-        heightA = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
-        heightB = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
-        maxHeight = max(int(heightA), int(heightB))
-
-        # now that we have the dimensions of the new image, construct
-        # the set of destination points to obtain a "birds eye view",
-        # (i.e. top-down view) of the image, again specifying points
-        # in the top-left, top-right, bottom-right, and bottom-left
-        # order
-        dst = np.array([
-            [0, 0],
-            [maxWidth - 1, 0],
-            [maxWidth - 1, maxHeight - 1],
-            [0, maxHeight - 1]], dtype="float32")
-        # compute the perspective transform matrix and then apply it
-        M = cv2.getPerspectiveTransform(rect, dst)
-        warped = cv2.warpPerspective(image, M, (maxWidth, maxHeight))
-
-        # return the warped image
-        return warped
-
-    def fix_perspective(self, contours):
-        warped = self.four_point_transform(self.result, contours)
-        plt.plot(warped)
-        return warped
-
-    def find_sampled_edge(self, img, final_image_size):
-        # sampling
-        edge = []
-        sample_parameter = 5
-        img = img[:, ::sample_parameter]
-        for x in range(int(final_image_size / sample_parameter)):
-            curve_height = 0
-            for y in range(final_image_size):
-                if img[y, x] > 0:
-                    curve_height = y
-                    break
-            edge.append(curve_height)
-        return edge
-
-    def line_intersection(self, line1, line2):
+    @staticmethod
+    def line_intersection(line1, line2):
+        # finding an intersection point of two lines given as their start and end points
         xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])
         ydiff = (line1[0][1] - line1[1][1], line2[0][1] - line2[1][1])  # Typo was here
 
@@ -188,7 +166,7 @@ class ImageProcessor:
         return x, y
 
     def find_four_corners(self, points):
-        # TO DO - PÓKI CO ZNAJDUJE ZŁE, TRZEBA ZAIMPLEMENTOWAĆ INACZEJ
+        # finding four corners of a smallest 4 sides figure (not necessarily rectangle) around the shape
         new_points = []
         for p in points:
             new_points.append(list(p[0]))
@@ -198,29 +176,28 @@ class ImageProcessor:
         y_min = np.min(new_points, axis=0)[1]
         y_max = np.max(new_points, axis=0)[1]
         intersection_points = []
-        if (len(two_min_x) > 1 and len(two_max_x) > 1):
+        if len(two_min_x) > 1 and len(two_max_x) > 1:
             intersection_points.append(self.line_intersection(two_min_x, ((0, y_min), (self.result.shape[1], y_min))))
             intersection_points.append(self.line_intersection(two_max_x, ((0, y_min), (self.result.shape[1], y_min))))
             intersection_points.append(self.line_intersection(two_max_x, ((0, y_max), (self.result.shape[1], y_max))))
             intersection_points.append(self.line_intersection(two_min_x, ((0, y_max), (self.result.shape[1], y_max))))
-        else:
-            intersection_points.append((0, 0))
-            intersection_points.append((self.img.shape[0], 0))
-            intersection_points.append((self.img.shape[0], self.img.shape[1]))
-            intersection_points.append((0, self.img.shape[1]))
         return intersection_points
+
+    @staticmethod
+    def is_rectangle(corners):
+        return corners[0][1] == corners[1][1] \
+               and corners[1][0] == corners[2][0] \
+               and corners[2][1] == corners[3][1] \
+               and corners[3][0] == corners[0][0]
 
     def process_image(self, fix_perspective=False):
         ret, thresh = cv2.threshold(self.img, 230, 255, cv2.THRESH_BINARY)
         _, contours, hierarchy = cv2.findContours(thresh, 1, cv2.CHAIN_APPROX_NONE)
-
         if len(contours) > 1:
             rect = self.find_best_rectangle(contours)
         else:
             rect = cv2.minAreaRect(contours[0])
-
         self.result = self.get_sub_image(rect, thresh)
-
         ranges = self.get_four_parts_indices(self.result.shape[:2])
         areas = []
 
@@ -235,25 +212,14 @@ class ImageProcessor:
         self.result = self.get_final_rotation(self.result, base)
 
         if fix_perspective:
-            _, contours, hierarchy = cv2.findContours(self.result, 1, cv2.CHAIN_APPROX_NONE)
+            _, contours, _ = cv2.findContours(self.result, 1, cv2.CHAIN_APPROX_NONE)
             cnt = contours[0]
-            # chull = cv2.convexHull(cnt)
-            # epsilon = 0.01 * cv2.arcLength(chull, True)
             approx = cv2.approxPolyDP(cnt, 4, True)
-
-            intersection_points = self.find_four_corners(approx)
-
-            if len(intersection_points) > 0:
-                x = []
-                y = []
-                for point in approx:
-                    x.append(point[0][0])
-                    y.append(point[0][1])
-                # plt.figure(1)
-                # plt.scatter(x, y)
-                # plt.show()
-                self.result = self.fix_perspective(intersection_points)
-                # self.plot()
+            if len(approx) > 3:
+                intersection_points = self.find_four_corners(approx)
+                if not self.is_rectangle(intersection_points):
+                    if len(intersection_points) > 0:
+                        self.result = self.fix_perspective(intersection_points)
 
     def read_img(self, path):
         self.img = io.imread(path)

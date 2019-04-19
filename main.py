@@ -36,7 +36,7 @@ def process(set_dir, image_count, plot=False, write_spec=False, cc=1):
         path = os.path.join(set_dir, "{}.png".format(i))
         ip = ImageProcessor()
         ip.read_img(path)
-        ip.process_image(fix_perspective=False)
+        ip.process_image(fix_perspective=True)
         if plot:
             ip.plot()
         fft_method = FFTMethod(cc)
