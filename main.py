@@ -61,7 +61,7 @@ def from_bash(dir, N):
         path = os.path.join(dir, "{}.png".format(i))
         ip = ImageProcessor()
         ip.read_img(path)
-        ip.process_image()
+        ip.process_image(fix_perspective=True)
         fft_method = FFTMethod(cc)
         fft_method.find_coefficients(ip.result)
     if fft_method:
@@ -101,17 +101,16 @@ def test(data_set, numbers, cc):
 
 
 if __name__ == "__main__":
-    param = 31
+    # param = 31
     # the best value for sets with perspective
-    all_sets_results = 0
-    for i in range(0, 9):
-        s = "set{}".format(i)
-        res = main(s, param, False, write_spec=False)
-        print(s, res)
-        all_sets_results += res
-    print("Result {}, {:.2f}%".format(all_sets_results, all_sets_results / 6.06))
-    # test("set1",[2, 5, 15], 20)
+    # all_sets_results = 0
+    # for i in range(0, 9):
+    #     s = "set{}".format(i)
+    #     res = main(s, param, False, write_spec=False)
+    #     print(s, res)
+    #     all_sets_results += res
+    # print("Result {}, {:.2f}%".format(all_sets_results, all_sets_results / 6.06))
 
-    # if len(sys.argv) != 3:
-    #     exit(1)
-    # from_bash(sys.argv[1], int(sys.argv[2]))
+    if len(sys.argv) != 3:
+        exit(1)
+    from_bash(sys.argv[1], int(sys.argv[2]))
