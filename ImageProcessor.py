@@ -129,7 +129,7 @@ class ImageProcessor:
 
     def fix_perspective(self, contours):
         warped = self.four_point_transform(self.result, contours)
-        plt.plot(warped)
+#        plt.plot(warped)
         return warped
 
     @staticmethod
